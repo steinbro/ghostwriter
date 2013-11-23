@@ -1,0 +1,2 @@
+pyFluidSynth==1.2.4
+pyttsx==1.1
