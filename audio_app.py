@@ -23,8 +23,9 @@ class AudioApp(object):
         self.synth.program_select(0, example, 0, 0)
 
     def speak(self, phrase):
-        self.narrator.say(phrase)
-        self.narrator.runAndWait()
+        if phrase:
+            self.narrator.say(phrase)
+            self.narrator.runAndWait()
 
     def speak_char(self, char):
         # TTS engine might not know how to pronounce these characters
