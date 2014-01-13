@@ -73,6 +73,19 @@ class TextEditor(AudioApp):
 
         return self.buffer[start:ending_at + 1].strip()
 
+    def last_sentence(self, ending_at=None):
+        if ending_at is None:
+            ending_at = self.cursor - 1
+
+        if self.cursor < 2:
+            return self.buffer[0]
+
+        start = ending_at - 1
+        while self.buffer[start] != '.' and start > 0:
+            start -= 1
+
+        return self.buffer[start:ending_at + 1].strip('. ')
+
     def close(self):
         if hasattr(self, 'fd'):
             self.fd.write(self.buffer)  # write changes to disk
@@ -99,7 +112,10 @@ class TextEditor(AudioApp):
 
         elif curses.ascii.isprint(key) or curses.ascii.isspace(key):
             self.insert_char(chr(key))
-            self.speak(self.last_word())
+            if chr(key) == '.':
+                self.speak(self.last_sentence())
+            else:
+                self.speak(self.last_word())
             #sys.stderr.write(self.buffer + '\r')
 
         return True  # keep reading keystrokes

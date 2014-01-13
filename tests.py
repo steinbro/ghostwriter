@@ -10,17 +10,13 @@ import unittest
 from text_editor import TextEditor
 
 
-class TextEditorTest(unittest.TestCase):
+class AudioAppTest(unittest.TestCase):
     def setUp(self):
-        self.outfile = tempfile.NamedTemporaryFile()
-        self.args = ['text_editor.py', self.outfile.name]
-        self.app = TextEditor(self.args)
-
         # Override the sound-generating methods with silent recordkeeping.
         self.utterances = []
         def instead_of_sounds(phrase, a=0, b=0, c=0, d=0, e=0):
             if type(phrase) is str:
-                self.utterances.append(phrase)
+                self.utterances.append(phrase.lower())
             else:
                 self.utterances.append('[tone]')
         self.app.speak = instead_of_sounds
@@ -30,18 +26,31 @@ class TextEditorTest(unittest.TestCase):
         #print repr(self.utterances)
         pass
 
+    def assertJustSaid(self, phrase):
+        if self.utterances[-1] != phrase.lower():
+            raise AssertionError(
+                'last said %r, not %r' % (self.utterances[-1], phrase))
+
+
+class TextEditorTest(AudioAppTest):
+    def setUp(self):
+        self.outfile = tempfile.NamedTemporaryFile()
+        self.args = ['text_editor.py', self.outfile.name]
+        self.app = TextEditor(self.args)
+        super(TextEditorTest, self).setUp()
+
     def test_simple(self):
         # should speak previous word after non-alpha character
         self.app.simulate_typing('hello world ')
-        self.assertEqual(self.utterances[-1], 'world')
+        self.assertJustSaid('world')
 
         # should speak character just deleted
         self.app.simulate_keystroke(curses.ascii.DEL)
-        self.assertEqual(self.utterances[-1], 'space')
+        self.assertJustSaid('space')
 
         # should play tone when attempting to move cursor beyond bounds
         self.app.simulate_keystroke(curses.KEY_RIGHT)
-        self.assertEqual(self.utterances[-1], '[tone]')
+        self.assertJustSaid('[tone]')
 
         for i in range(5):  # move cursor five characters left
             self.app.simulate_keystroke(curses.KEY_LEFT)
@@ -73,6 +82,10 @@ class TextEditorTest(unittest.TestCase):
         self.outfile.seek(0)
 
         self.assertEqual(n, len(self.outfile.read()))
+
+    def test_sentence(self):
+        self.app.simulate_typing('Hello there. This is a second sentence.')
+        self.assertJustSaid('this is a second sentence')
 
 if __name__ == '__main__':
     unittest.main()
