@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/steinbro/ghostwriter.svg?branch=master)](https://travis-ci.org/steinbro/ghostwriter)
+
 A text editor with no visual output whatsoever. A text-to-speech engine reads
 edits aloud, and an auditory bell provides navigational feedback.
 
